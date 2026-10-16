@@ -3,20 +3,14 @@ interface ApiOptions extends Omit<RequestInit, "body"> {
   body?: Record<string, any> | BodyInit | null;
 }
 
-export async function fetchFn<TResponse = any>(
-  endpoint: string,
-  options: ApiOptions = {},
-): Promise<TResponse> {
+export async function fetchFn<TResponse = any>(endpoint: string, options: ApiOptions = {}): Promise<TResponse> {
   const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
-  const fullUrl = `${baseUrl}${endpoint}`;
+  const fullUrl = `${baseUrl}/api${endpoint}`;
 
   const headers = new Headers(options.headers);
 
   // 3. Smart body handling: If it's a plain object, stringify it and set JSON header
-  let serializedBody: BodyInit | null | undefined = options.body as
-    | BodyInit
-    | null
-    | undefined;
+  let serializedBody: BodyInit | null | undefined = options.body as BodyInit | null | undefined;
 
   if (
     options.body &&
@@ -48,9 +42,7 @@ export async function fetchFn<TResponse = any>(
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
-    const errorMessage =
-      errorBody.message ||
-      `API Error: ${response.status} ${response.statusText}`;
+    const errorMessage = errorBody.message || `API Error: ${response.status} ${response.statusText}`;
 
     throw new Error(errorMessage);
   }

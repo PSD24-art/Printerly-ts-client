@@ -1,9 +1,5 @@
-import {
-  createAsyncThunk,
-  createSlice,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
-import { fetchFn } from "../utils/FetchFn";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { fetchFn } from "../utils/fetchFn";
 import safeAsync from "../utils/safeAsync";
 
 interface User {
@@ -12,19 +8,18 @@ interface User {
   email: string;
 }
 
-export const getCurrentUser = createAsyncThunk<
-  User,
-  void,
-  { rejectValue: string }
->("auth/getCurrentUser", async (_, { rejectWithValue }) => {
-  const [data, error] = await safeAsync(fetchFn("/auth/me", { method: "GET" }));
+export const getCurrentUser = createAsyncThunk<User, void, { rejectValue: string }>(
+  "auth/getCurrentUser",
+  async (_, { rejectWithValue }) => {
+    const [data, error] = await safeAsync(fetchFn("/auth/me", { method: "GET" }));
 
-  if (error) {
-    return rejectWithValue(error.message);
-  }
+    if (error) {
+      return rejectWithValue(error.message);
+    }
 
-  return data.user;
-});
+    return data.user;
+  },
+);
 
 export interface AuthState {
   user: User | null;
@@ -48,6 +43,12 @@ export const authSlice = createSlice({
       state.user = action.payload;
       state.isAuthenticated = !!action.payload;
     },
+    logout: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.loading = false;
+      state.error = null;
+    },
   },
 
   extraReducers: (builder) => {
@@ -60,6 +61,7 @@ export const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload;
         state.isAuthenticated = true;
+        console.log("User rehydrated successfully: ", state.user);
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.loading = false;
@@ -71,6 +73,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const { setUser } = authSlice.actions;
+export const { setUser, logout } = authSlice.actions;
 
 export default authSlice.reducer;
