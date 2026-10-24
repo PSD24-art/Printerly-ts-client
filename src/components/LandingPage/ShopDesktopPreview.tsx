@@ -90,13 +90,10 @@ const ShopDesktopPreview = () => (
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              fontVariant="outline"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
-            >
+            <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200">
               Decline
             </Button>
-            <Button fontVariant="primary" className="gap-2">
+            <Button variant="primary" className="gap-2">
               <CheckCircle2 className="w-4 h-4" /> Accept & Print
             </Button>
           </div>
@@ -141,7 +138,7 @@ const ShopDesktopPreview = () => (
                     <p className="text-xs text-slate-500 mt-0.5">24 pages • A4 Size</p>
                   </div>
                 </div>
-                <Button fontVariant="outline" className="text-xs py-1.5 px-3 h-auto gap-1.5">
+                <Button variant="outline" className="text-xs py-1.5 px-3 h-auto gap-1.5">
                   <Monitor className="w-3.5 h-3.5" /> View PDF
                 </Button>
               </div>

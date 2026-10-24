@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Clock3, Store, ArrowRight, Package, CheckCircle2, RefreshCw } from "lucide-react";
+import { Search, MapPin, Clock3, Store, ArrowRight, Package, RefreshCw } from "lucide-react";
 
 import { useAppSelector } from "../hooks/hooks";
 import { useGeolocation } from "../utils/getGeoLocation";

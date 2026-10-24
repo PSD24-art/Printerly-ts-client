@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, CircleAlert, Info, X } from "lucide-react";
+import { AlertTriangle, CircleAlert, Info, X } from "lucide-react";
 
 export type DialogType = "confirm" | "alert" | "warning" | "danger";
 

@@ -9,14 +9,12 @@ import {
   FileText,
   Package,
   CheckCircle2,
-  Clock3,
   ChevronRight,
   X,
   ExternalLink,
   Check,
   XCircle,
   Mail,
-  Copy,
 } from "lucide-react";
 import {
   orderActionConfig,
@@ -28,10 +26,11 @@ import {
   type Shop,
   type ShopRes,
 } from "../types/shopkeeperDash";
+import { getStatusStyle } from "../utils/getStatusStyles";
 
 const ShopkeeperDashboard: React.FC = () => {
   //dialogue imports
-  const { alert, confirm, danger, warning } = useDialog();
+  const { alert, confirm, danger } = useDialog();
 
   //order completed
   const [orderTab, setOrderTab] = useState<"active" | "completed">("active");
@@ -95,7 +94,6 @@ const ShopkeeperDashboard: React.FC = () => {
   }, []);
 
   //new order listener effect for socket
-
   useEffect(() => {
     const handleNewOrder = (data: { orderId: string; shopId: string }) => {
       console.log("New order received:", data);
@@ -294,28 +292,6 @@ const ShopkeeperDashboard: React.FC = () => {
 
   const completedOrders = orders.filter((order) => order.status === "Completed").length;
 
-  const getStatusStyle = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "accepted":
-        return "bg-emerald-50 text-emerald-700";
-      case "Accepted":
-        return "bg-emerald-50 text-emerald-700";
-      case "rejected":
-        return "bg-red-50 text-red-700";
-      case "Rejected":
-        return "bg-emerald-50 text-emerald-700";
-      case "completed":
-        return "bg-blue-50 text-blue-700";
-      case "Completed":
-        return "bg-blue-50 text-blue-700";
-      case "pending":
-        return "bg-amber-50 text-amber-700";
-      case "Pending":
-        return "bg-amber-50 text-amber-700";
-      default:
-        return "bg-amber-50 text-amber-700";
-    }
-  };
   return (
     <div className="h-[calc(100vh-80px)] overflow-hidden bg-[#f6f8fb]">
       <main className="mx-auto flex h-full max-w-[1500px] flex-col px-5 py-4 lg:px-6">

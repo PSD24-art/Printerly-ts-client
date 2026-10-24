@@ -7,7 +7,7 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import AdminDashBoard from "./pages/AdminDashBoard";
 import ShopkeeperDashboard from "./pages/ShopkeeperDashboard";
 import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "./hooks/hooks";
+import { useAppDispatch } from "./hooks/hooks";
 import { getCurrentUser } from "./redux/authSlice";
 import IndividualShop from "./pages/IndividualShop";
 import Navbar from "./components/Utility/Navbar";
@@ -15,7 +15,6 @@ import Footer from "./components/Utility/Footer";
 import { GetDashboard } from "./utils/getDashboard";
 function App() {
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth.user);
   useEffect(() => {
     dispatch(getCurrentUser());
   }, [dispatch]);
