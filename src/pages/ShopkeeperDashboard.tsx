@@ -15,6 +15,7 @@ import {
   Check,
   XCircle,
   Mail,
+  LoaderCircle,
 } from "lucide-react";
 import {
   orderActionConfig,
@@ -31,6 +32,9 @@ import { getStatusStyle } from "../utils/getStatusStyles";
 const ShopkeeperDashboard: React.FC = () => {
   //dialogue imports
   const { alert, confirm, danger } = useDialog();
+  //pdf states
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [loadingPdf, setLoadingPdf] = useState(false);
 
   //order completed
   const [orderTab, setOrderTab] = useState<"active" | "completed">("active");
@@ -47,6 +51,56 @@ const ShopkeeperDashboard: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  //get pdfURL using blob
+  useEffect(() => {
+    if (!selectedFile) {
+      setPdfUrl(null);
+      return;
+    }
+
+    let objectUrl: string | null = null;
+    const controller = new AbortController();
+
+    const fetchPdf = async () => {
+      try {
+        setLoadingPdf(true);
+        setPdfUrl(null);
+
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/shopkeeper/files/${selectedFile._id}`;
+
+        const response = await fetch(apiUrl, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load PDF: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        objectUrl = URL.createObjectURL(blob);
+        setPdfUrl(objectUrl);
+      } catch (error) {
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.error("PDF preview failed:", error);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoadingPdf(false);
+        }
+      }
+    };
+
+    fetchPdf();
+
+    return () => {
+      controller.abort();
+
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [selectedFile?._id]);
   //getorders utility
   const getOrders = useCallback(async () => {
     const [data, err] = await safeAsync(fetchFn<OrderRes>("/shopkeeper/orders"));
@@ -830,11 +884,35 @@ const ShopkeeperDashboard: React.FC = () => {
             </div>
 
             <div className="min-h-0 flex-1 bg-slate-100 p-3">
-              <iframe
-                src={`/api/shopkeeper/files/${selectedFile._id}`}
-                title={selectedFile.originalName}
-                className="h-full w-full rounded-xl border border-slate-200 bg-white"
-              />
+              {loadingPdf ? (
+                <div className="flex h-full min-h-[320px] w-full flex-col items-center justify-center rounded-xl border border-slate-200 bg-white px-6 text-center">
+                  <LoaderCircle className="mb-4 h-9 w-9 animate-spin text-blue-600" />
+
+                  <h3 className="text-sm font-semibold text-slate-800">Preparing your document</h3>
+
+                  <p className="mt-2 max-w-xs text-sm leading-relaxed text-slate-500">
+                    Please wait while we securely load the PDF preview.
+                  </p>
+                </div>
+              ) : pdfUrl ? (
+                <iframe
+                  src={pdfUrl}
+                  title={selectedFile.originalName}
+                  className="h-full w-full rounded-xl border border-slate-200 bg-white"
+                />
+              ) : (
+                <div className="flex h-full min-h-[320px] w-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+                    <FileText className="h-7 w-7 text-slate-400" />
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-slate-800">No document selected</h3>
+
+                  <p className="mt-2 max-w-xs text-sm leading-relaxed text-slate-500">
+                    Select a document from the order to preview it here.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex shrink-0 items-center justify-between border-t border-slate-200 px-5 py-3">
