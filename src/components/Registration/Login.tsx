@@ -34,10 +34,10 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="bg-slate-50 w-full max-w-md mx-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+    <div className="bg-slate-50 h-[70vh] w-full max-w-md mx-auto">
+      <div className="mt-20 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
         <div className="mb-7">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">Welcome back</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">Welcome back!</h1>
           <p className="mt-2 text-sm text-slate-500">Login to continue to Printerly</p>
         </div>
 

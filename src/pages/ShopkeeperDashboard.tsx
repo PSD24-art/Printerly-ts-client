@@ -347,7 +347,7 @@ const ShopkeeperDashboard: React.FC = () => {
   const completedOrders = orders.filter((order) => order.status === "Completed").length;
 
   return (
-    <div className="h-[calc(100vh-80px)] overflow-hidden bg-[#f6f8fb]">
+    <div className="h-[calc(100vh-60px)] overflow-hidden bg-[#f6f8fb]">
       <main className="mx-auto flex h-full max-w-[1500px] flex-col px-5 py-4 lg:px-6">
         {/* =====================================================
             COMPACT PAGE TOOLBAR
@@ -798,17 +798,6 @@ const ShopkeeperDashboard: React.FC = () => {
                       <p className="text-xs font-semibold text-amber-800">Awaiting acceptance</p>
                       <p className="mt-1 text-[10px] text-amber-700">Accept the order before marking it complete.</p>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleOrderAction("completing")}
-                      disabled
-                      className="flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-slate-100 text-xs font-semibold text-slate-400"
-                    >
-                      <CheckCircle2 size={15} />
-                      Mark as Complete
-                    </button>
-
                     <button
                       type="button"
                       onClick={() => handleOrderAction("accepting")}
@@ -845,6 +834,15 @@ const ShopkeeperDashboard: React.FC = () => {
                           Reject Order
                         </>
                       )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOrderAction("completing")}
+                      disabled
+                      className="flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-slate-100 text-xs font-semibold text-slate-400"
+                    >
+                      <CheckCircle2 size={15} />
+                      Mark as Complete
                     </button>
                   </div>
                 )}

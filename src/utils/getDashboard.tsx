@@ -1,4 +1,3 @@
-import { Loader } from "lucide-react";
 import { useAppSelector } from "../hooks/hooks";
 import AdminDashBoard from "../pages/AdminDashBoard";
 import CustomerDashboard from "../pages/CustomerDashboard";
@@ -8,10 +7,7 @@ import ShopkeeperDashboard from "../pages/ShopkeeperDashboard";
 export const GetDashboard = () => {
   const { user, loading } = useAppSelector((state) => state.auth);
 
-  if (loading) {
-    return <Loader />;
-  }
-
+  if (loading) return <Home />;
   if (!user) {
     return <Home />;
   }

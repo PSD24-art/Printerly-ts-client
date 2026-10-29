@@ -1,4 +1,4 @@
-import { Badge, CheckCircle2, Clock, CreditCard, FileText, Layers, Monitor, Store } from "lucide-react";
+import { Badge, CheckCircle2, Clock, CreditCard, FileText, IndianRupee, Layers, Monitor, Store } from "lucide-react";
 import Button from "../Utility/Button";
 
 const ShopDesktopPreview = () => (
@@ -171,15 +171,24 @@ const ShopDesktopPreview = () => (
             <div className="w-64 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <div className="flex justify-between text-sm mb-3 text-slate-600">
                 <span>Subtotal</span>
-                <span className="font-medium">$4.00</span>
+                <p className="flex items-center gap-0.5 font-bold text-slate-900 text-lg">
+                  <IndianRupee className="w-4 h-4" />
+                  <span>4.00</span>
+                </p>
               </div>
               <div className="flex justify-between text-sm mb-4 text-slate-600">
                 <span>Platform Fee</span>
-                <span className="font-medium">$0.50</span>
+                <p className="flex items-center gap-0.5 font-bold text-slate-900 text-lg">
+                  <IndianRupee className="w-4 h-4" />
+                  <span>0.50</span>
+                </p>
               </div>
               <div className="flex justify-between font-bold text-lg text-slate-900 pt-4 border-t border-slate-100">
                 <span>Total Paid</span>
-                <span className="text-indigo-600">$4.50</span>
+                <p className="flex items-center gap-0.5 font-bold text-slate-900 text-lg">
+                  <IndianRupee className="w-4 h-4" />
+                  <span>4.5</span>
+                </p>
               </div>
             </div>
           </section>

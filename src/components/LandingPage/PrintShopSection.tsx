@@ -2,7 +2,7 @@ import Badge from "../Utility/Badge";
 import ShopDesktopPreview from "./ShopDesktopPreview";
 
 const PrintShopSection = () => (
-  <section className="py-24 bg-slate-50 border-t border-slate-100 overflow-hidden relative">
+  <section id="forPrintShops" className="py-24 bg-slate-50 border-t border-slate-100 overflow-hidden relative">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center max-w-3xl mx-auto mb-16">
         <Badge variant="teal" className="mb-6">

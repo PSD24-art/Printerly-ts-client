@@ -12,7 +12,7 @@ import { getCurrentUser } from "./redux/authSlice";
 import IndividualShop from "./pages/IndividualShop";
 import Navbar from "./components/Utility/Navbar";
 import Footer from "./components/Utility/Footer";
-import { GetDashboard } from "./utils/getDashboard";
+import Home from "./pages/Home";
 function App() {
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -20,13 +20,13 @@ function App() {
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-[#f6f8fb] font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
       <Navbar />
 
-      <main className="pt-20 pb-20">
+      <main className="pt-20 ">
         <Routes>
-          <Route path="/" element={<GetDashboard />} />
-          <Route path="/home" element={<GetDashboard />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
 
           <Route path="/register/customer" element={<CustomerRegister />} />
 

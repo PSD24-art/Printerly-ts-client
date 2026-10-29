@@ -9,7 +9,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+    <section id="howItWorks" className="py-24 bg-slate-900 text-white relative overflow-hidden">
       {/* Subtle background element */}
       <div className="absolute top-0 right-1/2 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-900 to-slate-900 -z-10"></div>
 

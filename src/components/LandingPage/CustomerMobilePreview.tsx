@@ -93,11 +93,13 @@ const CustomerMobilePreview = ({ className = "" }) => (
       {/* Action Button */}
       <div className="bg-white p-3 border border-slate-200 rounded-xl shadow-sm flex items-center justify-between mt-4">
         <div>
-          <p className="text-[11px] text-slate-500">Total Price</p>
-          <p className="font-bold text-slate-900 text-lg">
-            <IndianRupee />4
+          <p className="text-[11px] font-medium text-slate-500">Total Price</p>
+          <p className="flex items-center gap-0.5 font-bold text-slate-900 text-lg">
+            <IndianRupee className="w-4 h-4" />
+            <span>4</span>
           </p>
         </div>
+
         <button className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-indigo-700 transition-colors">
           Place Order
         </button>

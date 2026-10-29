@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 const Hero = () => {
   const navigate = useNavigate();
   return (
-    <section className="pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden relative bg-slate-50/50">
+    <section className="pt-5 pb-16 md:pt-10 md:pb-24 overflow-hidden relative bg-slate-50/50">
       {/* Clean Background accents */}
       <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[800px] h-[600px] bg-indigo-50/40 rounded-full blur-3xl -z-10"></div>
       <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[600px] h-[600px] bg-teal-50/40 rounded-full blur-3xl -z-10"></div>
@@ -19,7 +19,7 @@ const Hero = () => {
             <Badge variant="teal" className="mb-6 border-transparent bg-teal-100 text-teal-800">
               <span className="flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5" />
-                The new standard for local printing
+                The new standard for printing
               </span>
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 tracking-tight leading-[1.1] mb-6">
