@@ -5,7 +5,7 @@ import safeAsync from "../../utils/safeAsync";
 
 type LocationType = {
   type: "Point";
-  coordinates: [number, number] | []; // GeoJSON standard: [longitude, latitude]
+  coordinates: [number, number] | [];
 };
 
 type PricingType = {
@@ -15,21 +15,25 @@ type PricingType = {
   binding: number;
 };
 
-const ShopekeeperRegister: React.FC = () => {
+type FormErrors = Record<string, string>;
+
+const ShopkeeperRegister: React.FC = () => {
   const { latitude, longitude, error, locationLoading, getLocation } = useGeolocation();
 
-  // Step 1: Shopkeeper Personal Details
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [mobile, setPhone] = useState<string>("");
+  // Personal details
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mobile, setPhone] = useState("");
 
-  // Step 2: Shop Details
-  const [shopName, setShopName] = useState<string>("");
-  const [openingHours, setOpeningHours] = useState<string>("");
-  const [services, setServices] = useState<string>("");
-  const [address, setAddress] = useState<string>("");
-  // Pricing State
+  // Shop details
+  const [shopName, setShopName] = useState("");
+  const [openingHours, setOpeningHours] = useState("");
+  const [services, setServices] = useState("");
+  const [address, setAddress] = useState("");
+  const [locationUrl, setLocationUrl] = useState("");
+
+  // Pricing
   const [pricing, setPricing] = useState<PricingType>({
     blackAndWhite: 0,
     colorPrint: 0,
@@ -37,77 +41,196 @@ const ShopekeeperRegister: React.FC = () => {
     binding: 0,
   });
 
-  // Location State
+  // Location
   const [location, setLocation] = useState<LocationType>({
     type: "Point",
     coordinates: [],
   });
 
-  // Multi-step control
-  const [step, setStep] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  // Automatically update coordinates when useGeolocation finishes fetching
+  // Update coordinates when geolocation is available
   useEffect(() => {
     if (latitude !== null && longitude !== null) {
       setLocation({
         type: "Point",
         coordinates: [longitude, latitude],
       });
+
+      setErrors((prev) => {
+        const updated = { ...prev };
+        delete updated.location;
+        return updated;
+      });
     }
   }, [latitude, longitude]);
 
-  // Handler to update nested pricing state safely
+  // Validate personal details
+  const validateStepOne = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!name.trim()) {
+      newErrors.name = "Full name is required";
+    }
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+
+    if (!mobile.trim()) {
+      newErrors.mobile = "Mobile number is required";
+    } else if (!/^(?:\+91[-\s]?)?[6-9]\d{9}$/.test(mobile.trim())) {
+      newErrors.mobile = "Enter a valid 10-digit Indian mobile number";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must contain at least 8 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Validate shop details
+  const validateStepTwo = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!shopName.trim()) {
+      newErrors.shopName = "Shop name is required";
+    }
+
+    if (!openingHours.trim()) {
+      newErrors.openingHours = "Opening hours are required";
+    }
+
+    if (!address.trim()) {
+      newErrors.address = "Shop address is required";
+    }
+
+    if (!services.trim()) {
+      newErrors.services = "Please enter at least one service";
+    }
+
+    if (!locationUrl.trim()) {
+      newErrors.locationUrl = "Shop location URL is required";
+    } else {
+      try {
+        const url = new URL(locationUrl);
+        if (!["http:", "https:"].includes(url.protocol)) {
+          newErrors.locationUrl = "Enter a valid HTTP or HTTPS URL";
+        }
+      } catch {
+        newErrors.locationUrl = "Enter a valid location URL";
+      }
+    }
+
+    if (pricing.blackAndWhite <= 0) {
+      newErrors.blackAndWhite = "Enter a price greater than 0";
+    }
+
+    if (pricing.colorPrint <= 0) {
+      newErrors.colorPrint = "Enter a price greater than 0";
+    }
+
+    if (pricing.lamination <= 0) {
+      newErrors.lamination = "Enter a price greater than 0";
+    }
+
+    if (pricing.binding <= 0) {
+      newErrors.binding = "Enter a price greater than 0";
+    }
+
+    if (location.coordinates.length !== 2) {
+      newErrors.location = "Shop coordinates could not be captured";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Continue to step 2
+  const handleContinue = () => {
+    if (!validateStepOne()) return;
+
+    setStep(2);
+    getLocation();
+  };
+
+  // Update pricing
   const handlePricingChange = (field: keyof PricingType, value: string) => {
+    const numberValue = Number(value);
+
     setPricing((prev) => ({
       ...prev,
-      [field]: Number(value) || 0, // Fallback to 0 if input parsing fails
+      [field]: numberValue >= 0 ? numberValue : 0,
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [field]: "",
     }));
   };
 
+  // Submit registration
   const handleFormSubmit = async () => {
-    if (error || location.coordinates.length === 0) {
-      console.log("Location tracking failed:", error);
-      alert("Unable to get your location. Please ensure location access is enabled before submitting.");
-      return;
-    }
+    if (!validateStepTwo()) return;
 
     setLoading(true);
 
     const registerBody = {
-      name,
-      email,
+      name: name.trim(),
+      email: email.trim(),
       password,
-      mobile,
-      shopName,
-      openingHours,
-      services,
+      mobile: mobile.trim(),
+      shopName: shopName.trim(),
+      openingHours: openingHours.trim(),
+      services: services.trim(),
       pricing,
-      address,
+      address: address.trim(),
       location,
+      locationUrl: locationUrl.trim(),
     };
-    console.log("Request recieved here");
 
-    const [data, err] = await safeAsync(
-      fetchFn(`/register/shop`, {
-        method: "POST",
-        body: registerBody,
-      }),
-    );
+    try {
+      const [data, err] = await safeAsync(
+        fetchFn("/register/shop", {
+          method: "POST",
+          body: registerBody,
+        }),
+      );
 
-    console.log("[data, err]", [data, err]);
+      if (err !== null) {
+        console.error("Shop registration failed:", err);
+        alert("Unable to register shop. Please try again.");
+        return;
+      }
 
-    if (err !== null) {
-      alert("Unable to register shop");
-      console.log("Shop registration failed", err);
+      console.log("Shopkeeper registered successfully:", data);
+      alert("Registration successful!");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    console.log("Shopkeeper registered successfully: ", data);
-    alert("Registration Successful!");
-    setLoading(false);
   };
+
+  // Reusable error message
+  const FieldError = ({ field }: { field: string }) => {
+    if (!errors[field]) return null;
+
+    return <p className="mt-1.5 text-xs font-medium text-red-600">{errors[field]}</p>;
+  };
+
+  // Reusable input classes
+  const inputClass = (field: string) =>
+    `w-full rounded-xl border ${
+      errors[field] ? "border-red-400" : "border-slate-200"
+    } bg-white px-4 py-3 text-sm text-slate-900 outline-none transition
+    placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10`;
 
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-slate-50 px-4 py-10 sm:py-14">
@@ -154,66 +277,76 @@ const ShopekeeperRegister: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-5">
+                {/* NAME */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-700">Full name</label>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                    className={inputClass("name")}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     type="text"
                     placeholder="Enter your name"
-                    required
                   />
+                  <FieldError field="name" />
                 </div>
 
+                {/* EMAIL */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                    onChange={(e) => setEmail(e.target.value)}
+                    className={inputClass("email")}
                     value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     type="email"
                     placeholder="Enter your email"
-                    required
                   />
+                  <FieldError field="email" />
                 </div>
 
+                {/* MOBILE */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-700">Mobile number</label>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                    onChange={(e) => setPhone(e.target.value)}
+                    className={inputClass("mobile")}
                     value={mobile}
-                    type="text"
+                    onChange={(e) => setPhone(e.target.value)}
+                    type="tel"
                     placeholder="Enter your mobile number"
-                    required
                   />
+                  <FieldError field="mobile" />
                 </div>
 
+                {/* PASSWORD */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                    onChange={(e) => setPassword(e.target.value)}
+                    className={inputClass("password")}
                     value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     type="password"
-                    placeholder="Enter your password"
-                    required
+                    placeholder="Minimum 8 characters"
                   />
+                  <FieldError field="password" />
                 </div>
 
                 <button
-                  className="mt-2 w-full rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.99] focus:outline-none focus:ring-4 focus:ring-indigo-500/20"
-                  onClick={() => {
-                    setStep(2);
-                    getLocation();
-                  }}
+                  type="button"
+                  disabled={locationLoading}
+                  onClick={handleContinue}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {locationLoading ? "Loading Location.." : loading ? "Loading.." : "Continue"}
+                  {locationLoading ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Fetching location...
+                    </>
+                  ) : (
+                    "Continue"
+                  )}
                 </button>
               </div>
             </div>
@@ -231,116 +364,114 @@ const ShopekeeperRegister: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-5">
+                {/* SHOP NAME */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-700">Shop name</label>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                    className={inputClass("shopName")}
                     value={shopName}
                     onChange={(e) => setShopName(e.target.value)}
-                    type="text"
                     placeholder="Enter your shop name"
-                    required
                   />
+                  <FieldError field="shopName" />
                 </div>
 
+                {/* OPENING HOURS */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-700">Opening hours</label>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                    className={inputClass("openingHours")}
                     value={openingHours}
                     onChange={(e) => setOpeningHours(e.target.value)}
-                    type="text"
                     placeholder="e.g., 9 AM - 8 PM"
                   />
+                  <FieldError field="openingHours" />
                 </div>
 
+                {/* ADDRESS */}
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Address</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Shop address</label>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                    className={inputClass("address")}
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    type="text"
                     placeholder="Enter your shop address"
                   />
+                  <FieldError field="address" />
                 </div>
 
+                {/* SERVICES */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-700">Services</label>
 
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                    className={inputClass("services")}
                     value={services}
                     onChange={(e) => setServices(e.target.value)}
-                    type="text"
                     placeholder="e.g., Printing, Lamination, Binding"
                   />
+                  <FieldError field="services" />
+                </div>
+
+                {/* LOCATION URL */}
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Google Maps location URL</label>
+
+                  <input
+                    className={inputClass("locationUrl")}
+                    value={locationUrl}
+                    onChange={(e) => setLocationUrl(e.target.value)}
+                    type="url"
+                    placeholder="https://maps.google.com/..."
+                  />
+
+                  <p className="mt-1 text-xs text-slate-500">Paste your shop's Google Maps sharing link.</p>
+
+                  <FieldError field="locationUrl" />
                 </div>
 
                 {/* PRICING */}
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold text-slate-900">Set item pricing</h3>
+
                     <p className="mt-1 text-xs text-slate-500">Enter the price for each service in ₹.</p>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-slate-600">Black & White</label>
+                    {(
+                      [
+                        ["blackAndWhite", "Black & White"],
+                        ["colorPrint", "Color Print"],
+                        ["lamination", "Lamination"],
+                        ["binding", "Binding"],
+                      ] as const
+                    ).map(([field, label]) => (
+                      <div key={field}>
+                        <label className="mb-1.5 block text-xs font-medium text-slate-600">{label}</label>
 
-                      <input
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                        type="number"
-                        value={pricing.blackAndWhite || ""}
-                        onChange={(e) => handlePricingChange("blackAndWhite", e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
+                        <input
+                          className={inputClass(field)}
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={pricing[field] || ""}
+                          onChange={(e) => handlePricingChange(field, e.target.value)}
+                          placeholder="Enter price"
+                        />
 
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-slate-600">Color Print</label>
-
-                      <input
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                        type="number"
-                        value={pricing.colorPrint || ""}
-                        onChange={(e) => handlePricingChange("colorPrint", e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-slate-600">Lamination</label>
-
-                      <input
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                        type="number"
-                        value={pricing.lamination || ""}
-                        onChange={(e) => handlePricingChange("lamination", e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-slate-600">Binding</label>
-
-                      <input
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                        type="number"
-                        value={pricing.binding || ""}
-                        onChange={(e) => handlePricingChange("binding", e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
+                        <FieldError field={field} />
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 {/* LOCATION STATUS */}
                 <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  {location.coordinates.length > 0 ? (
+                  {location.coordinates.length === 2 ? (
                     <div className="flex items-center gap-2">
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-sm text-emerald-700">
                         ✓
@@ -348,31 +479,61 @@ const ShopekeeperRegister: React.FC = () => {
 
                       <span className="text-sm font-medium text-emerald-700">Location captured successfully</span>
                     </div>
-                  ) : (
+                  ) : locationLoading ? (
                     <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-sm text-amber-700">
-                        ⏳
-                      </span>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+                      <span className="text-sm text-slate-600">Fetching location...</span>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium text-amber-700">Location not available</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {error || "Please enable location access and try again."}
+                      </p>
 
-                      <span className="text-sm font-medium text-amber-700">Fetching location data...</span>
+                      <button
+                        type="button"
+                        onClick={getLocation}
+                        className="mt-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+                      >
+                        Retry location
+                      </button>
                     </div>
                   )}
+
+                  <FieldError field="location" />
                 </div>
 
                 {/* ACTIONS */}
                 <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row">
                   <button
-                    className="w-full rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.99] sm:w-1/2"
-                    onClick={() => setStep(1)}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => {
+                      setErrors({});
+                      setStep(1);
+                    }}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 sm:w-1/2"
                   >
                     Previous
                   </button>
 
                   <button
-                    className="w-full rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.99] focus:outline-none focus:ring-4 focus:ring-indigo-500/20 sm:w-1/2"
+                    type="button"
+                    disabled={loading || locationLoading}
                     onClick={handleFormSubmit}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-1/2"
                   >
-                    Create shop
+                    {loading ? (
+                      <>
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Creating shop...
+                      </>
+                    ) : locationLoading ? (
+                      "Fetching location..."
+                    ) : (
+                      "Create shop"
+                    )}
                   </button>
                 </div>
               </div>
@@ -384,4 +545,4 @@ const ShopekeeperRegister: React.FC = () => {
   );
 };
 
-export default ShopekeeperRegister;
+export default ShopkeeperRegister;

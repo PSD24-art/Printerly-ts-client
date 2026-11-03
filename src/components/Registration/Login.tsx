@@ -4,25 +4,36 @@ import safeAsync from "../../utils/safeAsync";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/hooks";
 import { setUser } from "../../redux/authSlice";
+import { useDialog } from "../../Context/DialogueContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-
+  const { alert } = useDialog();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-
+  const [loading, setLoading] = useState<boolean>(false);
   const handleLogin = async () => {
     const requestBody = { email, password };
+    if (!email.includes("@")) {
+      alert({
+        title: "Invalid Credentials",
+        message: "Please cross check your credentials before hitting login..",
+      });
+      return;
+    }
+
+    setLoading(true);
     const [data, err] = await safeAsync(
       fetchFn("/auth/login", {
         method: "POST",
         body: requestBody,
       }),
     );
+    setLoading(false);
 
     if (err) {
-      alert(`Oops: ${err.message}`);
+      alert({ title: "Login failed!", message: `Oops: ${err.message}` });
       return;
     }
 
@@ -77,9 +88,9 @@ const Login: React.FC = () => {
 
         <button
           onClick={handleLogin}
-          className="w-full mt-6 inline-flex items-center justify-center px-5 py-3 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-indigo-500/20"
+          className={` w-full mt-6 inline-flex items-center justify-center px-5 py-3 text-sm font-semibold text-white rounded-xl shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-indigo-500/20 ${!loading ? "bg-indigo-600" : "bg-indigo-400"}`}
         >
-          Login
+          {loading ? "Logging You in.." : "Login"}
         </button>
       </div>
     </div>

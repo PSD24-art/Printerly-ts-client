@@ -12,6 +12,7 @@ interface Shop {
   shopName: string;
   address: string;
   openingHours?: string;
+  locationUrl: string;
 }
 
 interface ResponseObj {
@@ -57,7 +58,6 @@ const getStatusStyle = (status?: string) => {
 const CustomerDashboard: React.FC = () => {
   const user = useAppSelector((state) => state.auth.user);
   const navigate = useNavigate();
-
   const { latitude, longitude, error, locationLoading, getLocation } = useGeolocation();
 
   const [shops, setShops] = useState<Shop[]>([]);
@@ -97,7 +97,7 @@ const CustomerDashboard: React.FC = () => {
         setShopsLoading(false);
         return;
       }
-
+      console.log(data.shops);
       setShops(data.shops ?? []);
       setShopsLoading(false);
     }
@@ -319,7 +319,14 @@ const CustomerDashboard: React.FC = () => {
                       <MapPin size={15} className="mt-0.5 shrink-0 text-slate-400" />
                       <div className="min-w-0">
                         <p className="text-[10px] font-medium text-slate-400 sm:text-xs">Address</p>
-                        <p className="mt-0.5 break-words text-xs leading-5 text-slate-600 sm:text-sm">{shop.address}</p>
+                        <p className="mt-0.5 wrap-break-words text-xs leading-5 text-slate-600 sm:text-sm">
+                          {shop.address}
+                        </p>
+                        <a href={shop.locationUrl} target="_blank" rel="noopener noreferrer" className="group block">
+                          <p className="mt-0.5 break-all text-xs leading-5 text-indigo-600 underline transition-colors group-hover:text-indigo-500 sm:text-sm">
+                            View on Maps
+                          </p>
+                        </a>
                       </div>
                     </div>
 

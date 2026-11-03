@@ -8,7 +8,6 @@ import { logout } from "../../redux/authSlice";
 
 const Navbar = () => {
   const location = useLocation();
-  console.log(location);
   const dispatch = useAppDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -39,7 +38,7 @@ const Navbar = () => {
           {/* Logo */}
           <div onClick={() => navigate("/home")} className="flex-shrink-0 flex items-center gap-2 cursor-pointer group">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-indigo-700 transition-colors">
-              <Printer className="w-5 h-5 text-white" />
+              <img src="/printerlyCircle.png" alt="Printerly Logo" />
             </div>
             <span className="font-bold text-xl tracking-tight text-slate-900">Printerly</span>
           </div>
