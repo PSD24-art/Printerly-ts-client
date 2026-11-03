@@ -1,4 +1,4 @@
-import { LucideLayoutDashboard, Menu, Printer, X } from "lucide-react";
+import { LucideLayoutDashboard, Menu, X } from "lucide-react";
 import Button from "./Button";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
